@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2020 the original author or authors.
+ * Copyright 2008-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -255,6 +255,7 @@ public class Jackson2ExecutionContextStringSerializer implements ExecutionContex
     static class TrustedTypeIdResolver implements TypeIdResolver {
         private static final Set<String> TRUSTED_CLASS_NAMES = Collections.unmodifiableSet(new HashSet(Arrays.asList(
                 "java.util.ArrayList",
+                "java.util.Arrays$ArrayList",
                 "java.util.LinkedList",
                 "java.util.Collections$EmptyList",
                 "java.util.Collections$EmptyMap",
@@ -272,6 +273,7 @@ public class Jackson2ExecutionContextStringSerializer implements ExecutionContex
                 "java.time.LocalDate",
                 "java.time.LocalTime",
                 "java.time.LocalDateTime",
+                "java.sql.Timestamp",
                 "java.net.URL",
                 "java.util.TreeMap",
                 "java.util.HashMap",

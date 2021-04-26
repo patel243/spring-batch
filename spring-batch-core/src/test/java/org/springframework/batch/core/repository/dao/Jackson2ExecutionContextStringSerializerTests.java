@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2020 the original author or authors.
+ * Copyright 2008-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,11 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -162,4 +166,44 @@ public class Jackson2ExecutionContextStringSerializerTests extends AbstractExecu
 	}
 
 	public static class UnmappedDomesticNumber extends UnmappedPhoneNumber{}
+
+	@Test
+	public void arrayAsListSerializationTest() throws IOException {
+		//given
+		List<String> list = Arrays.asList("foo", "bar");
+		String key = "Arrays.asList";
+		Jackson2ExecutionContextStringSerializer serializer = new Jackson2ExecutionContextStringSerializer();
+		Map<String, Object> context = new HashMap<>(1);
+		context.put(key, list);
+
+		// when
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		serializer.serialize(context, outputStream);
+		InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+		Map<String, Object> deserializedContext = serializer.deserialize(inputStream);
+
+		// then
+		Object deserializedValue = deserializedContext.get(key);
+		Assert.assertTrue(List.class.isAssignableFrom(deserializedValue.getClass()));
+		Assert.assertTrue(((List<String>)deserializedValue).containsAll(list));
+	}
+
+	@Test
+	public void testSqlTimestampSerialization() throws IOException {
+		//given
+		Jackson2ExecutionContextStringSerializer serializer = new Jackson2ExecutionContextStringSerializer();
+		Map<String, Object> context = new HashMap<>(1);
+		Timestamp timestamp = new Timestamp(Instant.now().toEpochMilli());
+		context.put("timestamp", timestamp);
+
+		// when
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		serializer.serialize(context, outputStream);
+		InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+		Map<String, Object> deserializedContext = serializer.deserialize(inputStream);
+
+		// then
+		Timestamp deserializedTimestamp = (Timestamp) deserializedContext.get("timestamp");
+		Assert.assertEquals(timestamp, deserializedTimestamp);
+	}
 }
