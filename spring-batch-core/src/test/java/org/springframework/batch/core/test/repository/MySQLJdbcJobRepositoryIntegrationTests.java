@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 the original author or authors.
+ * Copyright 2020-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,10 @@ import com.mysql.cj.jdbc.MysqlDataSource;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
@@ -56,11 +56,14 @@ import org.springframework.test.context.junit4.SpringRunner;
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration
-@Ignore("Temporarily ignored until integration tests profile is created")
-public class MySQLJdbcJobRepositoryTests {
+public class MySQLJdbcJobRepositoryIntegrationTests {
+
+	// TODO find the best way to externalize and manage image versions
+	// when implementing https://github.com/spring-projects/spring-batch/issues/3092
+	private static final DockerImageName MYSQL_IMAGE = DockerImageName.parse("mysql:8.0.24");
 
 	@ClassRule
-	public static MySQLContainer mysql = new MySQLContainer<>();
+	public static MySQLContainer<?> mysql = new MySQLContainer<>(MYSQL_IMAGE);
 	
 	@Autowired
 	private DataSource dataSource;
@@ -116,11 +119,12 @@ public class MySQLJdbcJobRepositoryTests {
 	static class TestConfiguration {
 
 		@Bean
-		public DataSource dataSource() {
+		public DataSource dataSource() throws Exception {
 			MysqlDataSource datasource = new MysqlDataSource();
 			datasource.setURL(mysql.getJdbcUrl());
 			datasource.setUser(mysql.getUsername());
 			datasource.setPassword(mysql.getPassword());
+			datasource.setUseSSL(false);
 			return datasource;
 		}
 
